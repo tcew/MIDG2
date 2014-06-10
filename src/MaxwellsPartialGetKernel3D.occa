@@ -1,0 +1,18 @@
+occaKernel void MaxwellsPartialGetKernel3D(occaKernelInfoArg, 
+					   int occaVariable Ntotal, 
+					   occaPointer float *g_Q, 
+					   occaPointer int   *g_index, 
+					   occaPointer float *g_partQ){
+  
+  occaOuterFor0{
+    occaInnerFor0{	
+
+      int n = occaInnerId0 + occaInnerDim0*occaOuterId0;
+      
+      if(n<Ntotal)
+	g_partQ[n] = g_Q[g_index[n]];
+    }
+  }
+  
+} 
+

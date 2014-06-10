@@ -1,0 +1,142 @@
+
+occaKernel void MaxwellsSurfaceKernel3D(occaKernelInfoArg, 
+					int occaVariable  K,
+					occaPointer float  *g_surfinfo,
+					occaPointer float4 *g_LIFT,
+					occaPointer float  *g_Q,
+					occaPointer float  *g_partQ,
+					occaPointer float  *g_rhsQ){
+  
+  occaOuterFor0{
+
+    occaShared float s_fluxQ[p_Nfields*p_Nfp*p_Nfaces];
+
+    const int k = occaOuterId0;
+
+    occaInnerFor0{
+
+      const int n = occaInnerId0;
+
+      /* grab surface nodes and store flux in shared memory */
+      if(n< (p_Nfp*p_Nfaces) ){
+	/* coalesced reads (maybe) */
+	int m =  7*(k*p_Nfp*p_Nfaces)+n;
+
+	const  int idM   = g_surfinfo[m]; m += p_Nfp*p_Nfaces; // danger ! 
+	int idP   = g_surfinfo[m]; m += p_Nfp*p_Nfaces; // danger
+
+	const  float Fsc = g_surfinfo[m]; m += p_Nfp*p_Nfaces;
+	const  float Bsc = g_surfinfo[m]; m += p_Nfp*p_Nfaces;
+	const  float nx  = g_surfinfo[m]; m += p_Nfp*p_Nfaces;
+	const  float ny  = g_surfinfo[m]; m += p_Nfp*p_Nfaces;
+	const  float nz  = g_surfinfo[m];
+	
+	/* check if idP<0  */
+	float dHx, dHy, dHz, dEx, dEy, dEz;
+	if(idP<0){
+	  idP = p_Nfields*(-1-idP);
+	  
+	  dHx = Fsc*(g_partQ[idP+0] - g_Q[idM+0*BSIZE]);
+	  dHy = Fsc*(g_partQ[idP+1] - g_Q[idM+1*BSIZE]);
+	  dHz = Fsc*(g_partQ[idP+2] - g_Q[idM+2*BSIZE]);
+	  
+	  dEx = Fsc*(g_partQ[idP+3] - g_Q[idM+3*BSIZE]);
+	  dEy = Fsc*(g_partQ[idP+4] - g_Q[idM+4*BSIZE]);
+	  dEz = Fsc*(g_partQ[idP+5] - g_Q[idM+5*BSIZE]);
+	}
+	else{
+	  dHx = Fsc*(g_Q[idP+0*BSIZE] - g_Q[idM+0*BSIZE]);
+	  dHy = Fsc*(g_Q[idP+1*BSIZE] - g_Q[idM+1*BSIZE]);
+	  dHz = Fsc*(g_Q[idP+2*BSIZE] - g_Q[idM+2*BSIZE]);
+	  
+	  dEx = Fsc*(Bsc*g_Q[idP+3*BSIZE] - g_Q[idM+3*BSIZE]);
+	  dEy = Fsc*(Bsc*g_Q[idP+4*BSIZE] - g_Q[idM+4*BSIZE]);
+	  dEz = Fsc*(Bsc*g_Q[idP+5*BSIZE] - g_Q[idM+5*BSIZE]);
+	}
+	
+	const float ndotdH = nx*dHx + ny*dHy + nz*dHz;
+	const float ndotdE = nx*dEx + ny*dEy + nz*dEz;
+	
+	m = n;
+	s_fluxQ[m] = -ny*dEz + nz*dEy + dHx - ndotdH*nx; m += p_Nfp*p_Nfaces;
+	s_fluxQ[m] = -nz*dEx + nx*dEz + dHy - ndotdH*ny; m += p_Nfp*p_Nfaces;
+	s_fluxQ[m] = -nx*dEy + ny*dEx + dHz - ndotdH*nz; m += p_Nfp*p_Nfaces;
+	
+	s_fluxQ[m] =  ny*dHz - nz*dHy + dEx - ndotdE*nx; m += p_Nfp*p_Nfaces;
+	s_fluxQ[m] =  nz*dHx - nx*dHz + dEy - ndotdE*ny; m += p_Nfp*p_Nfaces;
+	s_fluxQ[m] =  nx*dHy - ny*dHx + dEz - ndotdE*nz; 
+      }
+    }
+    
+    /* make sure all element data points are cached */
+    occaBarrier(occaLocalMemFence);
+    
+    occaInnerFor0{
+      const int n = occaInnerId0;
+      
+      if(n< (p_Np))
+	{
+	  float rhsHx = 0, rhsHy = 0, rhsHz = 0;
+	  float rhsEx = 0, rhsEy = 0, rhsEz = 0;
+	  
+	  int sk = n, m;
+
+	  /* can manually unroll to 4 because there are 4 faces */
+	  for(m=0;p_Nfaces*p_Nfp-m;){
+	    const float4 L = g_LIFT[sk];
+	    sk+=p_Np;
+	    
+	    /* broadcast */
+	    int sk1 = m;
+	    rhsHx += L.x*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsHy += L.x*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsHz += L.x*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsEx += L.x*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsEy += L.x*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsEz += L.x*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    ++m;
+	    
+	    /* broadcast */
+	    sk1 = m;
+	    rhsHx += L.y*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsHy += L.y*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsHz += L.y*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsEx += L.y*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsEy += L.y*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsEz += L.y*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    ++m;
+	    
+	    /* broadcast */
+	    sk1 = m;
+	    rhsHx += L.z*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsHy += L.z*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsHz += L.z*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsEx += L.z*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsEy += L.z*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsEz += L.z*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    ++m;
+	    
+	    /* broadcast */
+	    sk1 = m;
+	    rhsHx += L.w*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsHy += L.w*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsHz += L.w*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsEx += L.w*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsEy += L.w*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    rhsEz += L.w*s_fluxQ[sk1]; sk1 += p_Nfp*p_Nfaces;
+	    ++m;
+	    
+	  }
+	  
+	  m = n+p_Nfields*k*BSIZE;
+	  g_rhsQ[m] += rhsHx; m += BSIZE;
+	  g_rhsQ[m] += rhsHy; m += BSIZE;
+	  g_rhsQ[m] += rhsHz; m += BSIZE;
+	  g_rhsQ[m] += rhsEx; m += BSIZE;
+	  g_rhsQ[m] += rhsEy; m += BSIZE;
+	  g_rhsQ[m] += rhsEz; m += BSIZE;
+	}
+    }
+  }
+}
+

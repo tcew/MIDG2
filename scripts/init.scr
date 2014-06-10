@@ -1,0 +1,21 @@
+ export OCCA_MPI_ENABLED=1
+
+ export OCCA_OPENCL_ENABLED=1
+ export OCCA_CUDA_ENABLED=1
+ export OCCA_OPENMP_ENABLED=1
+ export OCCA_PTHREADS_ENABLED=1
+ export OCCA_CACHE_DIR=~/.occa
+ export OCCA_DIR=`pwd`
+ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/lib
+
+ export OCCA_PTHREADS_COMPILER=g++
+ export OCCA_PTHREADS_COMPILER_FLAGS=-g
+
+ export OCCA_OPENCL_COMPILER_FLAGS="-cl-mad-enable -cl-finite-math-only"
+
+ export OCCA_OPENMP_COMPILER="g++"
+ export OCCA_OPENMP_COMPILER_FLAGS="-O3"
+
+ export OCCA_CUDA_COMPILER="nvcc"
+ export OCCA_CUDA_COMPILER_FLAGS="-O3"
+
