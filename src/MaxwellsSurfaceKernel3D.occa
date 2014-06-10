@@ -1,6 +1,7 @@
 
 occaKernel void MaxwellsSurfaceKernel3D(occaKernelInfoArg, 
 					int occaVariable  K,
+					occaPointer int    *g_mapinfo,
 					occaPointer float  *g_surfinfo,
 					occaPointer float4 *g_LIFT,
 					occaPointer float  *g_Q,
@@ -20,10 +21,12 @@ occaKernel void MaxwellsSurfaceKernel3D(occaKernelInfoArg,
       /* grab surface nodes and store flux in shared memory */
       if(n< (p_Nfp*p_Nfaces) ){
 	/* coalesced reads (maybe) */
-	int m =  7*(k*p_Nfp*p_Nfaces)+n;
+	int m =  2*(k*p_Nfp*p_Nfaces)+n;
 
-	const  int idM   = g_surfinfo[m]; m += p_Nfp*p_Nfaces; // danger ! 
-	int idP   = g_surfinfo[m]; m += p_Nfp*p_Nfaces; // danger
+	const  int idM   = g_mapinfo[m]; m += p_Nfp*p_Nfaces; 
+	int idP   = g_mapinfo[m]; 
+
+	m =  5*(k*p_Nfp*p_Nfaces)+n;
 
 	const  float Fsc = g_surfinfo[m]; m += p_Nfp*p_Nfaces;
 	const  float Bsc = g_surfinfo[m]; m += p_Nfp*p_Nfaces;

@@ -9,6 +9,7 @@ occa::device device;
 occa::memory c_LIFT;
 occa::memory c_DrDsDt;
 occa::memory c_surfinfo;
+occa::memory c_mapinfo;
 occa::memory c_vgeo;
 occa::memory c_Q; 
 occa::memory c_partQ; 
@@ -121,8 +122,11 @@ double InitOCCA3d(Mesh *mesh, int Nfields){
   c_vgeo = device.malloc(sz, vgeo);
    
   /* surfinfo (vmapM, vmapP, Fscale, Bscale, nx, ny, nz, 0) */
-  sz = mesh->K*p_Nfp*p_Nfaces*7*sizeof(float); 
-  float* h_surfinfo = (float*) malloc(sz); 
+  int sz5 = mesh->K*p_Nfp*p_Nfaces*5*sizeof(float); 
+  float* h_surfinfo = (float*) malloc(sz5); 
+
+  int sz2 = mesh->K*p_Nfp*p_Nfaces*2*sizeof(int); 
+  int* h_mapinfo = (int*) malloc(sz2); 
    
   /* local-local info */
   sk = 0;
@@ -163,20 +167,24 @@ double InitOCCA3d(Mesh *mesh, int Nfields){
 	  idP = mesh->vmapP[n]; /* -ve numbers */
 	}
  
-	sk = 7*p_Nfp*p_Nfaces*k+m+f*p_Nfp;
-	h_surfinfo[sk + 0*p_Nfp*p_Nfaces] = idM;
-	h_surfinfo[sk + 1*p_Nfp*p_Nfaces] = idP;
-	h_surfinfo[sk + 2*p_Nfp*p_Nfaces] = sJk[f]/(2.*J);
-	h_surfinfo[sk + 3*p_Nfp*p_Nfaces] = (idM==idP)?-1.:1.;
-	h_surfinfo[sk + 4*p_Nfp*p_Nfaces] = nxk[f];
-	h_surfinfo[sk + 5*p_Nfp*p_Nfaces] = nyk[f];
-	h_surfinfo[sk + 6*p_Nfp*p_Nfaces] = nzk[f];
+	sk = 2*p_Nfp*p_Nfaces*k+m+f*p_Nfp;
+	h_mapinfo[sk + 0*p_Nfp*p_Nfaces] = idM;
+	h_mapinfo[sk + 1*p_Nfp*p_Nfaces] = idP;
+
+	sk = 5*p_Nfp*p_Nfaces*k+m+f*p_Nfp;
+	h_surfinfo[sk + 0*p_Nfp*p_Nfaces] = sJk[f]/(2.*J);
+	h_surfinfo[sk + 1*p_Nfp*p_Nfaces] = (idM==idP)?-1.:1.;
+	h_surfinfo[sk + 2*p_Nfp*p_Nfaces] = nxk[f];
+	h_surfinfo[sk + 3*p_Nfp*p_Nfaces] = nyk[f];
+	h_surfinfo[sk + 4*p_Nfp*p_Nfaces] = nzk[f];
       }
     }
   }
    
-  c_surfinfo = device.malloc(sz, h_surfinfo);
+  c_mapinfo = device.malloc(sz2, h_mapinfo);
+  c_surfinfo = device.malloc(sz5, h_surfinfo);
 
+  free(h_mapinfo);
   free(h_surfinfo);
 
   printf("mesh->parNtotalout=%d\n", mesh->parNtotalout);
@@ -267,7 +275,7 @@ void MaxwellsKernel3d(Mesh *mesh, float frka, float frkb, float fdt){
   MaxwellsMPIRecv3d(mesh);
 
   /* evaluate surface contributions */
-  surfaceKernel(mesh->K, c_surfinfo, c_LIFT, c_Q, c_partQ, c_rhsQ);
+  surfaceKernel(mesh->K, c_mapinfo, c_surfinfo, c_LIFT, c_Q, c_partQ, c_rhsQ);
 
   /* update RK Step */
   int Ntotal = p_Nfields*BSIZE*mesh->K;
