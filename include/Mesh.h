@@ -20,8 +20,8 @@
 #define p_Nfaces  4
 #endif
 
-//#define BSIZE   (16*((p_Np+15)/16))
-#define BSIZE p_Np
+#define BSIZE   (16*((p_Np+15)/16))
+//#define BSIZE p_Np
 
 #define max(a,b)  ( (a>b)?a:b )
 #define min(a,b)  ( (a<b)?a:b )

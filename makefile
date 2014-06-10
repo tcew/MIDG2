@@ -6,7 +6,8 @@ ifeq ($(OS),OSX)
 endif
 
 ifeq ($(OS),LINUX)
-	links += -lGLU -lglut
+	links +=
+# -lGLU -lglut
 endif
 
 links += -L./lib  -lparmetis -lmetis
