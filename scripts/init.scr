@@ -14,7 +14,7 @@
  export OCCA_OPENCL_COMPILER_FLAGS="-cl-mad-enable -cl-finite-math-only"
 
  export OCCA_OPENMP_COMPILER="g++"
- export OCCA_OPENMP_COMPILER_FLAGS="-O3"
+ export OCCA_OPENMP_COMPILER_FLAGS="-O3 -fopenmp"
 
  export OCCA_CUDA_COMPILER="nvcc"
  export OCCA_CUDA_COMPILER_FLAGS="-O3"

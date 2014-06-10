@@ -74,7 +74,7 @@ int main(int argc, char **argv){
   //  if(mesh->procid==0)
     printf("dt = %f\n", dt);
 
-  double FinalTime = .5;
+  double FinalTime = .1;
 
   /* solve */
   MaxwellsRun3d(mesh, FinalTime, dt); 

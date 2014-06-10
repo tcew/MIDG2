@@ -47,7 +47,7 @@ void diagnose_array(const char *message, occa::memory &c_a, int N){
 
 double InitOCCA3d(Mesh *mesh, int Nfields){
   
-  int plat = 0, dev = 0;
+  int plat = 1, dev = 0;
   device.setup("OpenCL", plat, dev);
 
   /* Q  */
@@ -350,6 +350,7 @@ void gpu_get_data3d(int K,
 
 void get_partial_gpu_data3d(int Ntotal, float *h_partQ){
 
+  device.finish();
 
   partialGetKernel (Ntotal, c_Q, c_parmapOUT, c_tmp);
 
