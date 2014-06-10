@@ -53,8 +53,8 @@ occaKernel void MaxwellsVolumeKernel3D(occaKernelInfoArg,
       float dEzdr=0,dEzds=0,dEzdt=0;
       float Q;
 
-//            occaUnroll(4)      
-      for(m=0;p_Np-m;){
+//#pragma uroll 2
+      for(m=0;m<p_Np;){
 	float4 D = g_DrDsDt[n+m*BSIZE];
 	
 	id = m;
@@ -66,7 +66,7 @@ occaKernel void MaxwellsVolumeKernel3D(occaKernelInfoArg,
 	Q = s_Q[id]; dEzdr += D.x*Q; dEzds += D.y*Q; dEzdt += D.z*Q; 
 	++m; 
 
-#if 0  
+#if 0
 #if !(p_Np%2)
 
 	D = g_DrDsDt[n+m*BSIZE];
@@ -81,6 +81,8 @@ occaKernel void MaxwellsVolumeKernel3D(occaKernelInfoArg,
 	++m; 
 
 #endif
+
+
 
 #if !(p_Np%3)
 
@@ -111,6 +113,7 @@ occaKernel void MaxwellsVolumeKernel3D(occaKernelInfoArg,
 	++m; 
 
 #endif
+
 #endif	
       }
       

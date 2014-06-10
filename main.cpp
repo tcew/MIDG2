@@ -29,7 +29,7 @@ int main(int argc, char **argv){
   mesh = ReadMesh3d(argv[1]);
 
   /* perform load balancing */
-  //  LoadBalance3d(mesh);
+  LoadBalance3d(mesh);
 
   /* find element-element connectivity */
   FacePair3d(mesh, &maxNv);

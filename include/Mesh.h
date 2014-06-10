@@ -20,7 +20,8 @@
 #define p_Nfaces  4
 #endif
 
-#define BSIZE   (16*((p_Np+15)/16))
+#define PFAC 8
+#define BSIZE   (PFAC*((p_Np+PFAC-1)/PFAC))
 //#define BSIZE p_Np
 
 #define max(a,b)  ( (a>b)?a:b )

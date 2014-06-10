@@ -18,4 +18,5 @@
 
  export OCCA_CUDA_COMPILER="nvcc"
  export OCCA_CUDA_COMPILER_FLAGS="-O3"
+# --use_fast_math"
 

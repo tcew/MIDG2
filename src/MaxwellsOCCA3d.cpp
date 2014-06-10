@@ -48,7 +48,7 @@ void diagnose_array(const char *message, occa::memory &c_a, int N){
 double InitOCCA3d(Mesh *mesh, int Nfields){
   
   int plat = 0, dev = 0;
-  device.setup("CUDA", plat, dev);
+  device.setup("OpenCL", plat, dev);
 
   /* Q  */
   int sz = mesh->K*(BSIZE)*p_Nfields*sizeof(float); 
@@ -281,6 +281,7 @@ void MaxwellsKernel3d(Mesh *mesh, float frka, float frkb, float fdt){
   int Ntotal = p_Nfields*BSIZE*mesh->K;
   rkKernel(Ntotal, c_resQ, c_rhsQ, c_Q, frka, frkb, fdt);
 
+  device.finish();
 }
 
 
