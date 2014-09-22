@@ -47,7 +47,7 @@ void diagnose_array(const char *message, occa::memory &c_a, int N){
 
 double InitOCCA3d(Mesh *mesh, int Nfields){
   
-  int plat = 1, dev = 0;
+  int plat = 0, dev = 2;
   device.setup("OpenCL", plat, dev);
 
   /* Q  */
@@ -62,8 +62,8 @@ double InitOCCA3d(Mesh *mesh, int Nfields){
   printf("sz1= %d\n", sz);
   
   sz = mesh->parNtotalout*sizeof(float);
-  c_tmp  = device.malloc(sz, f_Q); // should not use f_Q
-  c_partQ = device.malloc(sz, f_Q);
+  c_tmp  = device.malloc(sz+1, f_Q); // should not use f_Q
+  c_partQ = device.malloc(sz+1, f_Q);
 
   printf("sz2= %d\n", sz);
 
@@ -189,7 +189,7 @@ double InitOCCA3d(Mesh *mesh, int Nfields){
 
   printf("mesh->parNtotalout=%d\n", mesh->parNtotalout);
   sz = mesh->parNtotalout*sizeof(int);
-  c_parmapOUT = device.malloc(sz, mesh->parmapOUT);
+  c_parmapOUT = device.malloc(sz+1, mesh->parmapOUT);
 
   /* now build kernels */
   occa::kernelInfo dgInfo;
