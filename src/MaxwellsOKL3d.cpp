@@ -198,6 +198,7 @@ double InitOCCA3d(Mesh *mesh, int Nfields){
   dgInfo.addDefine("p_Nfaces",  p_Nfaces);
   dgInfo.addDefine("p_Nfields", p_Nfields);
   dgInfo.addDefine("BSIZE",     BSIZE);
+  dgInfo.addDefine("p_max_NfpNfaces_Np", max(p_Nfp*p_Nfaces, p_Np));
 
   volumeKernel = device.buildKernelFromSource("src/MaxwellsVolumeKernel3D.okl", 
 					      "MaxwellsVolumeKernel3D",
