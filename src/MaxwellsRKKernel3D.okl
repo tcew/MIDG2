@@ -1,0 +1,25 @@
+kernel void MaxwellsRKKernel3D(int Ntotal, 
+			       float *g_resQ, 
+			       const float * restrict g_rhsQ, 
+			       float *g_Q,
+			       const float occaVariable fa,
+			       const float occaVariable fb,
+			       const float occaVariable fdt){
+  
+
+#define p_BLK 256
+  
+  for(int block=0;block<Ntotal;block+=p_BLK;outer0){
+    for(int n=block;n<block+p_BLK;++n;inner0){
+      
+      if(n<Ntotal){
+	float rhs = g_rhsQ[n];
+	float res = g_resQ[n];
+	res = fa*res + fdt*rhs;
+	
+	g_resQ[n] = res;
+	g_Q[n]    += fb*res;
+      }
+    }
+  }
+} 

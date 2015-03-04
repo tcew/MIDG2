@@ -1,0 +1,16 @@
+kernel void MaxwellsPartialGetKernel3D(const int Ntotal, 
+				       const float * restrict g_Q, 
+				       const int   * restrict g_index, 
+				       float * restrict g_partQ){
+  
+#define p_BLK 256
+  for(int block=0;block<Ntotal;block += p_BLK;outer0){
+    for(int n=block;n<block+p_BLK;++n; inner0){
+
+      if(n<Ntotal)
+	g_partQ[n] = g_Q[g_index[n]];
+    }
+  }
+  
+} 
+
