@@ -5,7 +5,7 @@
 # http://www.nudg.org
 # ------------------------------------------------------------------------
 
-# to get occa
+# to get occa (do this in the directory containing MIDG2)
 git clone https://github.com/libocca/occa
 
 # change to occa directory
@@ -20,6 +20,19 @@ make -j 8
 
 # change to MIDG2 directory
 cd ../MIDG2
+
+# to build the ParMETIS dependency
+cd 3rdParty
+tar -zxvf parmetis-4.0.3.tar.gz
+cd parmetis-4.0.3
+make config
+make
+
+# to copy libraries into expected directory 
+find . -name lib\*.a -exec cp {} ../../lib \;
+
+# change to MIDG2 directory
+cd ../../
 
 # to clean build MIDG2
 make clean
