@@ -86,6 +86,10 @@ void StartUp3d(Mesh *mesh){
   mesh->rk4c[5] =              1.0;
 
   /* build coordinates */
+  double xmin = 1e9, xmax = -1e9;
+  double ymin = 1e9, ymax = -1e9;
+  double zmin = 1e9, zmax = -1e9;
+
   mesh->x = BuildMatrix(mesh->K, p_Np);
   mesh->y = BuildMatrix(mesh->K, p_Np);
   mesh->z = BuildMatrix(mesh->K, p_Np);
@@ -113,8 +117,20 @@ void StartUp3d(Mesh *mesh){
 			     mesh->GZ[k][2]*(1.+s) +
 			     mesh->GZ[k][3]*(1.+t) 
 			    );
+
+      xmin = (xmin<mesh->x[k][n])?xmin:mesh->x[k][n];
+      xmax = (xmax>mesh->x[k][n])?xmax:mesh->x[k][n];
+
+      ymin = (ymin<mesh->y[k][n])?ymin:mesh->y[k][n];
+      ymax = (ymax>mesh->y[k][n])?ymax:mesh->y[k][n];
+      
+      zmin = (zmin<mesh->z[k][n])?zmin:mesh->z[k][n];
+      zmax = (zmax>mesh->z[k][n])?zmax:mesh->z[k][n];
+      
     }
   }
+
+  printf("xrange = [%g,%g] yrange = [%g,%g] zrange = [%g,%g] \n", xmin, xmax, ymin, ymax, zmin, zmax);
   
   /* build node-node connectivity maps */
   void BuildMaps3d(Mesh *mesh);

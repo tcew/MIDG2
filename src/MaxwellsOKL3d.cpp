@@ -47,7 +47,7 @@ void diagnose_array(const char *message, occa::memory &c_a, int N){
 
 double InitOCCA3d(Mesh *mesh, int Nfields){
   
-  device.setup("mode = OpenCL, platformID = 0, deviceID = 2");
+  device.setup("mode = OpenCL, platformID = 0, deviceID = 1");
 
   /* Q  */
   int sz = mesh->K*(BSIZE)*p_Nfields*sizeof(float); 

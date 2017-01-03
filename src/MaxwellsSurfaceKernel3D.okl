@@ -24,11 +24,11 @@ kernel void MaxwellsSurfaceKernel3D(const int K,
 	m =  5*(k*p_Nfp*p_Nfaces)+n;
 
 	const  float Fsc = g_surfinfo[m]; m += p_Nfp*p_Nfaces;
-	const  float Bsc = g_surfinfo[m]; m += p_Nfp*p_Nfaces;
+	float Bsc = g_surfinfo[m]; m += p_Nfp*p_Nfaces;
 	const  float nx  = g_surfinfo[m]; m += p_Nfp*p_Nfaces;
 	const  float ny  = g_surfinfo[m]; m += p_Nfp*p_Nfaces;
 	const  float nz  = g_surfinfo[m];
-	
+
 	/* check if idP<0  */
 	float dHx, dHy, dHz, dEx, dEy, dEz;
 	if(idP<0){

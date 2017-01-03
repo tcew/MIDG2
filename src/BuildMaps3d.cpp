@@ -218,7 +218,7 @@ void BuildMaps3d(Mesh *mesh){
   for(p2=0;p2<nprocs;++p2)
     mesh->parNtotalout += skP[p2]*p_Nfields;
 
-  mesh->parmapOUT = BuildIntVector(mesh->parNtotalout);
+  mesh->parmapOUT = BuildIntVector(mesh->parNtotalout+1);
 
   /* now match up local nodes with the requested (recv'ed nodes) */
   int idout = -1;

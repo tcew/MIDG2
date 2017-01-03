@@ -10,6 +10,8 @@ ifeq ($(OS),LINUX)
 # -lGLU -lglut
 endif
 
+oPath = ./obj
+sPath = ./src
 links += -L./lib  -lparmetis -lmetis
 
 #---[ COMPILATION ]-------------------------------

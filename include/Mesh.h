@@ -20,7 +20,7 @@
 #define p_Nfaces  4
 #endif
 
-#define PFAC 8
+#define PFAC 1
 #define BSIZE   (PFAC*((p_Np+PFAC-1)/PFAC))
 //#define BSIZE p_Np
 

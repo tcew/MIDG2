@@ -9,12 +9,12 @@ void MaxwellsRun3d(Mesh *mesh, double FinalTime, double dt){
   double mpitime0 = MPI_Wtime();
   MPI_Barrier(MPI_COMM_WORLD);
 
+  int Nsteps = FinalTime/dt;
+  dt = FinalTime/Nsteps;
+  
   /* outer time step loop  */
-  while (time<FinalTime){
+  for(tstep=0;tstep<Nsteps;++tstep){
 
-    /* adjust final step to end exactly at FinalTime */
-    if (time+dt > FinalTime) { dt = FinalTime-time; }
-    
     for (INTRK=1; INTRK<=5; ++INTRK) {
       
       /* compute rhs of TM-mode MaxwellsGPU's equations */
@@ -27,8 +27,7 @@ void MaxwellsRun3d(Mesh *mesh, double FinalTime, double dt){
     }
     
     time += dt;     /* increment current time */
-    tstep++;        /* increment timestep */
-  }    
+  }
 
   double flopsV = p_Np*p_Np*36 + p_Np*66; /* V3 */
   double flopsS = p_Nfp*p_Nfaces*(15 + 10 + 36) + p_Np*(p_Nfaces*p_Nfp*12 + 6);

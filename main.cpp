@@ -1,3 +1,4 @@
+#include <math.h>
 #include "mpi.h"
 #include "fem.h"
 
@@ -6,7 +7,7 @@ int main(int argc, char **argv){
   Mesh *mesh;
   int procid, nprocs, maxNv;
   int k,n, sk=0;
-  double minEz, maxEz, gminEz, gmaxEz;
+  double minEy, maxEy, gminEy, gmaxEy, gmaxErrorEy;
 
   /* initialize MPI */
   MPI_Init(&argc, &argv);
@@ -52,8 +53,8 @@ int main(int argc, char **argv){
       Hy[sk] = 0;
       Hz[sk] = 0;
       Ex[sk] = 0;
-      Ey[sk] = 0;
-      Ez[sk] = cos(M_PI*mesh->x[k][n])*cos(M_PI*mesh->y[k][n])*cos(M_PI*mesh->z[k][n]);
+      Ey[sk] = sin(M_PI*mesh->x[k][n])*sin(M_PI*mesh->z[k][n]);
+      Ez[sk] = 0;
       ++sk;
     }
   }
@@ -74,7 +75,8 @@ int main(int argc, char **argv){
   //  if(mesh->procid==0)
     printf("dt = %f\n", dt);
 
-  double FinalTime = .1;
+    double FinalTime = .75;
+  printf("FinalTime=%g\n", FinalTime);
 
   /* solve */
   MaxwellsRun3d(mesh, FinalTime, dt); 
@@ -86,21 +88,26 @@ int main(int argc, char **argv){
   gpu_get_data3d(mesh->K, Hx, Hy, Hz, Ex, Ey, Ez);
 
   /* find maximum & minimum values for Ez */
-  minEz=Ez[0], maxEz=Ez[0];
+  minEy=Ey[0], maxEy=Ey[0];
 
+  double maxErrorEy = 0;
   for(k=0;k<mesh->K;++k) {
     for(n=0;n<p_Np;++n){
       int id = n + p_Np*k;
-      minEz = (minEz>Ez[id])?Ez[id]:minEz;
-      maxEz = (maxEz<Ez[id])?Ez[id]:maxEz;
+      double exactEy = sin(M_PI*mesh->x[k][n])*sin(M_PI*mesh->z[k][n])*cos(sqrt(2.)*M_PI*FinalTime);
+      double errorEy = fabs(exactEy-Ey[id]);
+      maxErrorEy = (errorEy>maxErrorEy) ? errorEy:maxErrorEy;
+      minEy = (minEy>Ey[id])?Ey[id]:minEy;
+      maxEy = (maxEy<Ey[id])?Ey[id]:maxEy;
     }
   }
 
-  MPI_Reduce(&minEz, &gminEz, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
-  MPI_Reduce(&maxEz, &gmaxEz, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+  MPI_Reduce(&minEy, &gminEy, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
+  MPI_Reduce(&maxEy, &gmaxEy, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+  MPI_Reduce(&maxErrorEy, &gmaxErrorEy, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
   if(procid==0)
-    printf("t=%f Ez in [ %g, %g ] \n", FinalTime, gminEz, gmaxEz );
+    printf("t=%f Ey in [ %g, %g ] with max nodal error %g \n", FinalTime, gminEy, gmaxEy, gmaxErrorEy );
 
   /* nicely stop MPI */
   MPI_Finalize();
