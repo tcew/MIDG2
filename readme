@@ -5,4 +5,28 @@
 # http://www.nudg.org
 # ------------------------------------------------------------------------
 
-To be updated
+# to get occa
+git clone https://github.com/libocca/occa
+
+# change to occa directory
+cd occa
+
+# environment variable pointing to the occa directory
+# [ for convenience add this to your .bashrc: export OCCA_DIR=yourOccaPath ]
+export OCCA_DIR=`pwd`
+
+# build occa
+make -j 8
+
+# change to MIDG2 directory
+cd ../MIDG2
+
+# to clean build MIDG2
+make clean
+
+# to build using mpic++ as the compiler and degree 8 elements
+CXX=mpic++ make N=8
+
+# to run with one process on test mesh (bi-unit cube)
+mpiexec -n 1  ./main Meshes/F072.neu
+
