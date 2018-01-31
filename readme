@@ -19,7 +19,7 @@ export OCCA_DIR=`pwd`
 make -j 8
 
 # change to MIDG2 directory
-cd ../MIDG2
+cd ..
 
 # to build the ParMETIS dependency
 cd 3rdParty
